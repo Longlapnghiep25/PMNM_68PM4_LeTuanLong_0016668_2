@@ -1,16 +1,9 @@
 <?php
 
-require_once '../app/models/StudentModel.php';
+class Student extends controller {
 
-class student
-{
-    public function index()
-    {
-        $studentModel = new StudentModel();
+    function index() {
 
-        $students = $studentModel->getStudents();
-
-        require_once '../app/views/student/index.php';
+        $this->view("sinhvien/index");
     }
 }
-?>
