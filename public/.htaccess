@@ -1,6 +1,6 @@
 RewriteEngine On
+RewriteBase /PMNM_68PM4_LeTuanLong_0016668_2/public/
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-
-RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
