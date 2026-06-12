@@ -6,21 +6,65 @@ class sinhvienModels {
         $this->conn = DB::getInstance();
     }
 
-    public function getAll($offset = 0, $limit = PAGE_SIZE) {
-        $stmt = $this->conn->prepare(
-            "SELECT sv.*, lh.tenlop
-             FROM sinhvien sv
-             LEFT JOIN lophoc lh ON sv.malop = lh.malop
-             ORDER BY sv.id ASC
-             LIMIT ? OFFSET ?"
-        );
-        $stmt->bind_param("ii", $limit, $offset);
+    private function buildWhere($search, $malop, &$types, &$params) {
+        $where = "WHERE 1=1";
+        if ($search !== '') {
+            $where .= " AND (sv.mssv LIKE ? OR sv.ten LIKE ?)";
+            $kw = "%$search%";
+            $types  .= "ss";
+            $params[] = $kw;
+            $params[] = $kw;
+        }
+        if ($malop !== '') {
+            $where .= " AND sv.malop = ?";
+            $types  .= "s";
+            $params[] = $malop;
+        }
+        return $where;
+    }
+
+    public function getAll($offset = 0, $limit = 10, $search = '', $malop = '', $sort = 'id', $order = 'ASC') {
+        $allowedSort  = ['mssv', 'ten', 'id'];
+        $allowedOrder = ['ASC', 'DESC'];
+        if (!in_array($sort, $allowedSort))   $sort  = 'id';
+        if (!in_array($order, $allowedOrder)) $order = 'ASC';
+
+        $types = '';
+        $params = [];
+        $where = $this->buildWhere($search, $malop, $types, $params);
+
+        $sql = "SELECT sv.*, lh.tenlop
+                FROM sinhvien sv
+                LEFT JOIN lophoc lh ON sv.malop = lh.malop
+                $where
+                ORDER BY sv.$sort $order
+                LIMIT ? OFFSET ?";
+
+        $types .= "ii";
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function countAll() {
-        $result = $this->conn->query("SELECT COUNT(*) AS total FROM sinhvien");
+    public function countAll($search = '', $malop = '') {
+        $types = '';
+        $params = [];
+        $where = $this->buildWhere($search, $malop, $types, $params);
+
+        $sql = "SELECT COUNT(*) AS total FROM sinhvien sv $where";
+
+        if ($types) {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            return (int)$stmt->get_result()->fetch_assoc()['total'];
+        }
+
+        $result = $this->conn->query($sql);
         return (int)$result->fetch_assoc()['total'];
     }
 

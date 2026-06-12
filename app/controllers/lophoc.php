@@ -6,16 +6,31 @@ class lophoc extends Controller {
     }
 
     public function index($param1 = 1) {
-        $model     = $this->model('lophocModels');
-        $page      = max(1, (int)$param1);
-        $total     = $model->countAll();
-        $totalpage = max(1, ceil($total / PAGE_SIZE));
-        $offset    = ($page - 1) * PAGE_SIZE;
-
+        $model = $this->model('lophocModels');
+    
+        $page     = max(1, (int)$param1);
+        $search   = trim($_GET['q'] ?? '');
+        $sort     = $_GET['sort'] ?? 'id';
+        $order    = $_GET['order'] ?? 'ASC';
+        $pageSize = (int)($_GET['pagesize'] ?? PAGE_SIZE);
+    
+        $allowedSize = [2, 5, 10, 20, 50];
+        if (!in_array($pageSize, $allowedSize)) $pageSize = PAGE_SIZE;
+    
+        $total     = $model->countAll($search);
+        $totalpage = max(1, ceil($total / $pageSize));
+        if ($page > $totalpage) $page = $totalpage;
+        $offset    = ($page - 1) * $pageSize;
+    
         $this->render('lophoc/index', [
-            'lophocs'     => $model->getAll($offset, PAGE_SIZE),
+            'lophocs'     => $model->getAll($offset, $pageSize, $search, $sort, $order),
             'totalpage'   => $totalpage,
             'currentPage' => $page,
+            'total'       => $total,
+            'search'      => $search,
+            'sort'        => $sort,
+            'order'       => $order,
+            'pageSize'    => $pageSize,
         ]);
     }
 

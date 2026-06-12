@@ -6,23 +6,42 @@ class sinhvien extends Controller {
     }
 
     public function index($param1 = 1) {
-        $model     = $this->model('sinhvienModels');
-        $page      = max(1, (int)$param1);
-        $total     = $model->countAll();
-        $totalpage = max(1, ceil($total / PAGE_SIZE));
-        $offset    = ($page - 1) * PAGE_SIZE;
+        $model    = $this->model('sinhvienModels');
+        $lopModel = $this->model('lophocModels');
+
+        $page     = max(1, (int)$param1);
+        $search   = trim($_GET['q'] ?? '');
+        $malop    = trim($_GET['malop'] ?? '');
+        $sort     = $_GET['sort'] ?? 'id';
+        $order    = $_GET['order'] ?? 'ASC';
+        $pageSize = (int)($_GET['pagesize'] ?? PAGE_SIZE);
+
+        $allowedSize = [2, 5, 10, 20, 50];
+        if (!in_array($pageSize, $allowedSize)) $pageSize = PAGE_SIZE;
+
+        $total     = $model->countAll($search, $malop);
+        $totalpage = max(1, ceil($total / $pageSize));
+        if ($page > $totalpage) $page = $totalpage;
+        $offset    = ($page - 1) * $pageSize;
 
         $this->render('sinhvien/index', [
-            'sinhviens'   => $model->getAll($offset, PAGE_SIZE),
+            'sinhviens'   => $model->getAll($offset, $pageSize, $search, $malop, $sort, $order),
             'totalpage'   => $totalpage,
             'currentPage' => $page,
+            'total'       => $total,
+            'search'      => $search,
+            'malop'       => $malop,
+            'sort'        => $sort,
+            'order'       => $order,
+            'pageSize'    => $pageSize,
+            'lophocs'     => $lopModel->getAllNoLimit(),
         ]);
     }
 
     public function create() {
-        $model     = $this->model('sinhvienModels');
-        $lopModel  = $this->model('lophocModels');
-        $errors    = [];
+        $model    = $this->model('sinhvienModels');
+        $lopModel = $this->model('lophocModels');
+        $errors   = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ten      = trim($_POST['ten'] ?? '');
@@ -42,16 +61,16 @@ class sinhvien extends Controller {
         }
 
         $this->render('sinhvien/create', [
-            'errors'   => $errors,
-            'lophocs'  => $lopModel->getAllNoLimit(),
+            'errors'  => $errors,
+            'lophocs' => $lopModel->getAllNoLimit(),
         ]);
     }
 
     public function edit($id = null) {
-        $model     = $this->model('sinhvienModels');
-        $lopModel  = $this->model('lophocModels');
-        $id        = (int)$id;
-        $sinhvien  = $model->getById($id);
+        $model    = $this->model('sinhvienModels');
+        $lopModel = $this->model('lophocModels');
+        $id       = (int)$id;
+        $sinhvien = $model->getById($id);
 
         if (!$sinhvien) {
             echo "Không tìm thấy sinh viên!";
