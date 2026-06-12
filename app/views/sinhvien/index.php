@@ -12,6 +12,7 @@
             <th>Tên</th>
             <th>Giới tính</th>
             <th>MSSV</th>
+            <th>Lớp</th>
             <th>Thao tác</th>
         </tr>
     </thead>
@@ -22,6 +23,7 @@
             <td><?= htmlspecialchars($sv['ten']) ?></td>
             <td><?= htmlspecialchars($sv['gioitinh']) ?></td>
             <td><?= htmlspecialchars($sv['mssv']) ?></td>
+            <td><?= htmlspecialchars($sv['tenlop'] ?? '—') ?></td>
             <td>
                 <a href="<?= BASE_URL ?>/sinhvien/edit/<?= $sv['id'] ?>"
                    class="btn btn-primary btn-sm">Sửa</a>
@@ -32,14 +34,11 @@
         </tr>
         <?php endforeach; ?>
         <?php if (empty($sinhviens)): ?>
-        <tr>
-            <td colspan="5" class="text-center text-muted">Chưa có sinh viên nào.</td>
-        </tr>
+        <tr><td colspan="6" class="text-center text-muted">Chưa có sinh viên nào.</td></tr>
         <?php endif; ?>
     </tbody>
 </table>
 
-<!-- Paging -->
 <div class="mt-3">
     <?php for ($i = 1; $i <= $totalpage; $i++):
         $active = ($i == $currentPage) ? 'btn-primary' : 'btn-outline-primary';

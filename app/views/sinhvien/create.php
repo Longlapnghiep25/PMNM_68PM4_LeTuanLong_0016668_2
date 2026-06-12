@@ -9,9 +9,7 @@
         <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
             <ul class="mb-0">
-                <?php foreach ($errors as $e): ?>
-                    <li><?= $e ?></li>
-                <?php endforeach; ?>
+                <?php foreach ($errors as $e): ?><li><?= $e ?></li><?php endforeach; ?>
             </ul>
         </div>
         <?php endif; ?>
@@ -34,6 +32,18 @@
                 <label class="form-label">MSSV</label>
                 <input type="text" name="mssv" class="form-control"
                        value="<?= htmlspecialchars($_POST['mssv'] ?? '') ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Lớp học</label>
+                <select name="malop" class="form-select" required>
+                    <option value="">-- Chọn lớp --</option>
+                    <?php foreach ($lophocs as $lop): ?>
+                        <option value="<?= htmlspecialchars($lop['malop']) ?>"
+                            <?= (($_POST['malop']??'')===$lop['malop'])?'selected':'' ?>>
+                            <?= htmlspecialchars($lop['tenlop']) ?> (<?= htmlspecialchars($lop['malop']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-success">Lưu</button>
